@@ -124,9 +124,9 @@ namespace Hook
 			std::cout << "failed to unhook present\n";
 		}
 
-		/*ImGui_ImplDX11_Shutdown();
+		ImGui_ImplDX11_Shutdown();
 		ImGui_ImplWin32_Shutdown();
-		ImGui::DestroyContext();*/
+		ImGui::DestroyContext();
 		MH_Uninitialize();
 	}
 	void init_imgui()
