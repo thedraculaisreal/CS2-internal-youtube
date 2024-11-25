@@ -1,10 +1,9 @@
 #include "hook.h"
-#include <Windows.h>
 #include <iostream>
 #include <minhook.h>
 #include "../imgui/imgui.h"
-#include "../imgui/imgui_impl_win32.h"
 #include "../imgui/imgui_impl_dx11.h"
+#include "../imgui/imgui_impl_win32.h"
 #include "../menu/menu.h"
 #include "../settings/settings.h"
 
@@ -13,6 +12,7 @@ namespace Hook
 	extern PresentFn o_present = nullptr;
 	extern IDXGISwapChain* swap_chain = nullptr;
 	extern ID3D11Device* device = nullptr;
+	extern WNDPROC oWndProc = NULL;
 	extern ID3D11DeviceContext* context = nullptr;
 	extern ID3D11RenderTargetView* render_target_view = nullptr;
 	extern HWND window = NULL;
@@ -28,20 +28,44 @@ namespace Hook
 			if (!device || !context)
 			{
 				p_swap_chain->GetDevice(__uuidof(ID3D11Device), (void**)&device);
+				if (!device)
+				{
+					std::cerr << "Failed to get device\n";
+					device->Release();
+					return o_present(p_swap_chain, sync_interval, flags);
+				}
 				device->GetImmediateContext(&context);
+				if (!context)
+				{
+					std::cerr << "Failed to get device context\n";
+					device->Release();
+					return o_present(p_swap_chain, sync_interval, flags);
+				}
 			}
 
 			// create render target view;
 			ID3D11Texture2D* back_buffer = nullptr;
-			p_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&back_buffer);
-			device->CreateRenderTargetView(back_buffer, nullptr, &render_target_view);
+			if (FAILED(p_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&back_buffer)))
+			{
+				std::cerr << "Failed to get back buffer.\n";
+				return o_present(p_swap_chain, sync_interval, flags);
+			}
+
+			if (FAILED(device->CreateRenderTargetView(back_buffer, nullptr, &render_target_view)))
+			{
+				std::cout << "Failed to create render target view.\n";
+				back_buffer->Release();
+				return o_present(p_swap_chain, sync_interval, flags);
+			}
 			back_buffer->Release();
 
+			oWndProc = (WNDPROC)SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)WndProc);
 			init_imgui();
 
 			imgui_initialized = true;
 		}
 		// toggle for menu; change VK_INSERT to whatever you want.
+		printf("Inside");
 		if (GetAsyncKeyState(VK_INSERT) & 0x1)
 			Menu::toggle_menu();
 
@@ -49,7 +73,9 @@ namespace Hook
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		Menu::menu();
+		ImGui::Begin("My Menu");
+		ImGui::Text("Hello, ImGui!");
+		ImGui::End();
 		// esp goes here.
 
 		ImGui::Render();
@@ -104,9 +130,9 @@ namespace Hook
 			}
 
 			// cleanup;
-			swap_chain->Release();
-			device->Release();
-			context->Release();
+			//swap_chain->Release();
+			//device->Release();
+			//context->Release();
 		}
 		else
 		{
@@ -134,8 +160,16 @@ namespace Hook
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
-		window = FindWindow(nullptr, "Counter-Strike 2");
+		window = FindWindowA(NULL, "Counter-Strike 2");
 		ImGui_ImplWin32_Init(window);
 		ImGui_ImplDX11_Init(device, context);
+	}
+	LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+
+		if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+			return true;
+
+		return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 	}
 };

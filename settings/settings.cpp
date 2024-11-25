@@ -2,5 +2,5 @@
 
 namespace Settings
 {
-	extern bool menu_toggle = false;
+	extern bool menu_toggle = true;
 }
