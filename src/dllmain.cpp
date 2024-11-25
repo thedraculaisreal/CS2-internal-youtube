@@ -2,6 +2,7 @@
 #include <iostream>
 #include "reader.h"
 #include "../features/aimbot.h"
+#include "../hook/hook.h"
 
 
 void Main(HMODULE hModule) noexcept
@@ -9,8 +10,8 @@ void Main(HMODULE hModule) noexcept
     AllocConsole();
     FILE* fp;
     freopen_s(&fp, "CONOUT$", "w", stdout);
+    Hook::init_hook();
     Sleep(1000);
-    
     Aimbot::do_aimbot();
 
     FreeLibraryAndExitThread(hModule, 0);
@@ -27,19 +28,17 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
                      )
 {
-    if (ul_reason_for_call == 1)
+    switch (ul_reason_for_call)
     {
+    case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
+        CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(Main), hModule, 0, nullptr);
+        CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(read_mem), hModule, 0, nullptr);
+        break;
+    case DLL_PROCESS_DETACH:
 
-        const auto thread = CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(Main), hModule, 0, nullptr);
-        const auto thread1 = CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(read_mem), hModule, 0, nullptr);
-
-        if (thread)
-            CloseHandle(thread);
-        if (thread1)
-            CloseHandle(thread1);
+        break;
     }
-
     return TRUE;
 }
 
