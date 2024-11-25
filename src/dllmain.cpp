@@ -36,7 +36,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(read_mem), hModule, 0, nullptr);
         break;
     case DLL_PROCESS_DETACH:
-
+        Hook::unhook_present();
         break;
     }
     return TRUE;

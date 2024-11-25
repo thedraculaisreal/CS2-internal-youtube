@@ -1,7 +1,10 @@
-﻿LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+﻿  hook.cpp
+  dllmain.cpp
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Generating code
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-  All 756 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  850 of 1484 functions (57.3%) were compiled, the rest were copied from previous compilation.
+    210 functions were new in current compilation
+    63 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   CS2-internal-youtube.vcxproj -> C:\Users\schwarztoter\source\cheats\CS2-internal-youtube\build\CS2-internal-youtube.dll
   'pwsh.exe' is not recognized as an internal or external command,
