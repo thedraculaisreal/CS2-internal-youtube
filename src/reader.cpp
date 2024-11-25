@@ -11,6 +11,7 @@ void Reader::update()
 {
 	while (true)
 	{
+		Sleep(5);
 		std::vector<Entity*> list;
 
 		local_player_view = (uintptr_t)(client + 0x1A5D610);
